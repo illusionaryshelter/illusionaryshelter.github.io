@@ -12,7 +12,7 @@ tags:
   - Point Registration
   - Loop Closure Detection
 excerpt_separator: "" # 定义摘要分隔符, 下文会解释
-
+excerpt:2025-04-21
 header:
   overlay_image: /assets/images/b1.jpg
   actions:
@@ -149,4 +149,5 @@ else
      cout << "[Not loop] yaw diff: " << nn_align * PC_UNIT_SECTORANGLE << " deg." << endl;
 }
 ```
+
 
