@@ -17,7 +17,7 @@ header:
   overlay_image: /assets/images/b1.jpg
   actions:
     - label: "More Info"
-      url: "[https://unsplash.com](https://github.com/illusionaryshelter/FAST-LIO-Localization-SC-QN2)"
+      url: "https://github.com/illusionaryshelter/FAST-LIO-Localization-SC-QN2"
 
 ---
 
@@ -80,3 +80,5 @@ void performGICPRegistration(const PointCloud::Ptr& source, const PointCloud::Pt
         // 使用这个 transformation 更新位姿
     }
 }
+```
+
