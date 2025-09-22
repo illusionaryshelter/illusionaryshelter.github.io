@@ -3,7 +3,7 @@ permalink: /about/
 title: "About"
 last_modified_at: 2022-05-27T11:59:26-04:00
 toc: true
-layout: posts
+layout: single
 header:
   overlay_image: /assets/images/b2.jpg
 ---
@@ -35,5 +35,6 @@ header:
 
 * **邮箱**: illusionaryshelter@gmail.com
 * **GitHub**: [@illusionaryshelter](https://github.com/illusionaryshelter)
+
 
 
