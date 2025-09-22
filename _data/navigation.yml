@@ -7,7 +7,7 @@ main:
   - title: "博客文章" # 这是你新加的
     url: /year-archive/ # 链接到按年归档的页面，这是MM主题自带的
   - title: "分类" # 或者直接链接到分类页
-    url: /categories/
+    url: /category-archive/
   # - title: "About"
   #   url: https://mmistakes.github.io/minimal-mistakes/about/
   # - title: "Sample Posts"
