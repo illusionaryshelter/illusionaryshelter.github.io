@@ -11,12 +11,11 @@ tags:
   - GICP
   - Point Registration
   - Loop Closure Detection
-excerpt_separator: "" # 定义摘要分隔符, 下文会解释
-excerpt:2025-04-21
+excerpt_separator: "" 
 header:
   overlay_image: /assets/images/b1.jpg
   actions:
-    - label: "More Info"
+    - label: "Code"
       url: "https://github.com/illusionaryshelter/FAST-LIO-Localization-SC-QN2"
 
 ---
@@ -149,5 +148,6 @@ else
      cout << "[Not loop] yaw diff: " << nn_align * PC_UNIT_SECTORANGLE << " deg." << endl;
 }
 ```
+
 
 
