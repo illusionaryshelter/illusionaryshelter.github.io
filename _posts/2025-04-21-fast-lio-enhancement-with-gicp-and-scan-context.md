@@ -21,64 +21,131 @@ header:
 
 ---
 
-## 摘要
+## 1. 动机：为何选择 GICP 与 Scan Context？
 
-Fast-LIO 系列算法作为当前激光惯性 SLAM 领域的里程碑之作，以其高效率和高精度在众多应用中大放异彩。然而，原生的 Fast-LIO 作为一个纯粹的激光惯性里程计（LIO），仍然存在两个主要的提升空间：一是其前端点云配准的鲁棒性，二是在大场景下无法避免的累积漂移。本文旨在探讨并实践两个主流的改进方向：使用 **GICP (Generalized-ICP)** 替换原有的点云配准，以增强前端的精度和鲁棒性；引入 **Scan Context** 作为后端的回环检测模块，以消除累积误差，实现全局一致性。
+### 1.1 GICP：从“点到点”到“面到面”的配准升维
 
----
+Fast-LIO 的前端扫描匹配（scan-to-map matching）依赖于点到K-D树的距离计算，这本质上是一种“点到点”或“点到线/面”的残差模型。在理想的结构化环境中，这种方法表现优异。但在稀疏、半结构化或充满平面的场景（如室内走廊、隧道）中，简单的点状约束可能导致错误的收敛方向。
 
-## 1. Fast-LIO 核心思想回顾
+**GICP (Generalized-ICP)** 将问题提升了一个维度。它不再将点云视为孤立点的集合，而是为每个点估计一个局部平面，然后最小化这些平面之间的距离。
 
-在深入改进之前，我们简要回顾 Fast-LIO 的核心思想。它是一个紧耦合的激光惯性里程计系统，其精髓在于：
+- **核心思想**：GICP 假设每个点及其邻域共同定义了一个局部平面。配准的误差函数是基于“面到面”的概率模型，这使得它对点云中的噪声和稀疏性具有更强的鲁棒性。
+- **优势**：在特征较少的平面或边缘上，GICP 能提供比传统 ICP 更稳定、更准确的约束，从而提高里程计的精度。
 
-- **基于迭代卡尔曼滤波 (Iterated Kalman Filter) 的状态估计**：将 IMU 和 LiDAR 的测量在一个统一的框架下进行融合。
-- **反向传播去除运动畸变**：利用 IMU 的高频测量，将一帧激光扫描中的每个点都校正到统一的时刻，极大地提高了精度。
-- **直接点云配准**：将当前扫描的点直接与地图（由 ikd-Tree 维护的体素地图）进行配准，计算残差并用于更新卡尔曼滤波的状态。
+### 1.2 Scan Context：轻量级、非学习式的回环检测“神器”
 
-然而，Fast-LIO 的原生实现主要关注前端里程计，这意味着：
-1.  **前端配准**：虽然高效，但在结构稀疏或退化场景下，其点到面的配准方式仍有提升空间。
-2.  **全局漂移**：系统没有回环检测和全局优化的能力，当机器人回到曾经经过的位置时，它无法识别出来，导致轨迹和地图会随着时间累积漂移。
+激光雷达里程计的累计漂移是不可避免的。回环检测与修正（Loop Closure Detection）是抑制全局漂移、构建全局一致性地图的关键。Fast-LIO 作为一个里程计（Odometry）系统，其开源版本并未集成强大的回环模块。
 
-## 2. 改进一：从标准ICP到GICP
+**Scan Context** 是一种顶级的激光雷达位置识别（Place Recognition）算法。
 
-### 为什么选择GICP？
+- **核心思想**：它将三维点云投影成一个二维的 `[环数 x 扇区数]` 的描述子图像。这个描述子通过编码每个格网内点的最大高度信息，实现了对旋转变化的鲁棒性（通过列平移匹配）。
+- **优势**：
+    - **高效性**：生成和匹配描述子的速度极快，对系统性能影响微乎其微。
+    - **无需训练**：与基于深度学习的方法不同，它无需数据集训练，泛化能力强。
+    - **鲁棒性**：对视角变化和旋转不敏感，非常适合 SLAM 场景。
 
-标准的 ICP 算法（如点到点、点到面）在进行点云配准时，通常只考虑了点的位置，而忽略了点云自身在不同方向上的不确定性。例如，从一个平坦的墙面扫描得到的点云，其在平行于墙面的方向上不确定性很大，而在垂直于墙面的方向上不确定性则很小。
+## 2. 集成实现细节
 
-**GICP (Generalized-ICP)** 正是为了解决这个问题而生。它将每个点及其周围的点拟合成一个局部平面，并为这个平面（即这个点）计算一个协方差矩阵。这样，每个点就被看作一个概率分布，而不仅仅是一个三维空间中的坐标。配准过程就从“点对点”的距离最小化，变为了“概率分布之间”的距离最小化。这种 **“面到面 (plane-to-plane)”** 的配准方式能够更好地利用场景的结构信息，从而在结构化环境中提供更高的鲁棒性和精度。
+我们的实验基于 Fast-LIO 的开源代码库。主要修改分为前端配准和后端回环两个部分。
 
-### 实现思路
+### 2.1 GICP 替换前端配准
+此处选择了vectr-ucla的[nano-gicp](https://github.com/vectr-ucla/direct_lidar_odometry)，用于轻量级点云扫描与交叉对象数据共享匹配，本质上是将开源的FastGICP和NanoFLANN两个包进行合并，使用NanoGICP的NanoFLANN来高效构建KD-tree, 然后通过FastGICP进行高效匹配，不过据说small_gicp的效果现在更好。
 
-在 Fast-LIO 的框架中替换 ICP 模块相对直接。主要步骤如下：
-
-1.  **定位配准模块**：找到 Fast-LIO 中执行点云到地图配准的核心代码。
-2.  **替换为GICP**：使用一个成熟的 GICP 库（例如 PCL 中的 `pcl::GeneralizedIterativeClosestPoint`）来替换原有的配准函数。
-3.  **数据传递**：将当前帧处理后的点云 (`input_source`) 和 ikd-Tree 构建的局部地图 (`target_map`) 传递给 GICP 算法。
-
-一个简化的伪代码示例如下：
 ```cpp
-#include <pcl/registration/gicp.h>
+RegistrationOutput icpAlignment(const pcl::PointCloud<PointType> &src,
+                                  const pcl::PointCloud<PointType> &dst) {
+    RegistrationOutput reg_output;
+    aligned_.clear();
+    // merge subkeyframes before ICP
+    pcl::PointCloud<PointType>::Ptr src_cloud(new pcl::PointCloud<PointType>());
+    pcl::PointCloud<PointType>::Ptr dst_cloud(new pcl::PointCloud<PointType>());
+    *src_cloud = src;
+    *dst_cloud = dst;
+    nano_gicp_.setInputSource(src_cloud);
+    nano_gicp_.calculateSourceCovariances();
+    nano_gicp_.setInputTarget(dst_cloud);
+    nano_gicp_.calculateTargetCovariances();
+    nano_gicp_.align(aligned_);
 
-// ...
-
-void performGICPRegistration(const PointCloud::Ptr& source, const PointCloud::Ptr& target) {
-    pcl::GeneralizedIterativeClosestPoint<PointT, PointT> gicp;
-    gicp.setInputSource(source);
-    gicp.setInputTarget(target);
-
-    // 设置GICP参数
-    gicp.setMaxCorrespondenceDistance(1.0);
-    gicp.setTransformationEpsilon(1e-8);
-    gicp.setEuclideanFitnessEpsilon(1e-5);
-    gicp.setMaximumIterations(30);
-
-    PointCloud Final;
-    gicp.align(Final);
-
-    if (gicp.hasConverged()) {
-        Eigen::Matrix4f transformation = gicp.getFinalTransformation();
-        // 使用这个 transformation 更新位姿
+    // handle results
+    reg_output.score_ = nano_gicp_.getFitnessScore();
+    // if matchness score is lower than threshold, (lower is better)
+    if (nano_gicp_.hasConverged() &&
+        reg_output.score_ < config_.gicp_config_.icp_score_thr_) {
+      reg_output.is_valid_ = true;
+      reg_output.is_converged_ = true;
+      reg_output.pose_between_eig_ =
+          nano_gicp_.getFinalTransformation().cast<double>();
     }
+    return reg_output;
 }
 ```
+直接用 GICP 的结果覆盖 IKFOM 的状态更新是不明智的。更优的策略是：将 GICP 计算得到的点到面的残差和协方差，作为外部测量信息，融入到 esekf 的更新公式中。但这需要对公式进行深度修改。一个简化的替代方案是，用 GICP 的结果作为 IKFOM 迭代的更精确初值。
 
+### 2.2 Scancontext 集成
+Scancontext使用Ring和Sector把3维信息压缩到极坐标，Ring类似于极坐标中的角度，Sector类似于极坐标中的长度，3D物理空间被Ring和Sector划分成2D的区块空间，每个区块由Ring和Sector唯一确定。同时，将所需相关信息存放在每个区块中，比如：区块中的点云数量、区块中的点云max height、区块中的点云mean height。描述子本身以Ring-Sector矩阵表示，除去水平方向的位移偏差，具有旋转不变性。
+
+理论上，使用当前帧Scan-Context遍历历史所有Scan-Context一定能找到对应的结果，即相似度的全局极值，不过为了更快引入Ring-key，这也是一种旋转不变描述子，具体表示为一位数组，其中每个元素是Ring的编码值，按照距离原点从近到远排布，相当于对原先的数据进行了压缩和降维。
+
+具体流程为：读取单帧3D点云数据，建立Scan-Context，在Mapping过程中生成KeyFrame中查找，使用Ring-key在KD-tree下查找最近邻结果，结果计算统计得分，得到最佳匹配，完成回环检测。
+
+其中Scan-Context的结构与Ring-Key的生成示意如下
+```cpp
+const int NO_POINT = -1000;
+Eigen::MatrixXd desc = NO_POINT * MatrixXd::Ones(PC_NUM_RING, PC_NUM_SECTOR);
+...
+MatrixXd SCManager::makeRingkeyFromScancontext( Eigen::MatrixXd &_desc )
+{
+    /* 
+     * summary: rowwise mean vector
+    */
+    Eigen::MatrixXd invariant_key(_desc.rows(), 1);
+    for ( int row_idx = 0; row_idx < _desc.rows(); row_idx++ )
+    {
+        Eigen::MatrixXd curr_row = _desc.row(row_idx);
+        invariant_key(row_idx, 0) = curr_row.mean();
+    }
+
+    return invariant_key;
+} 
+```
+然后可以使用nanoflann自带的KDTree查找候选描述子
+```cpp
+nanoflann::KNNResultSet<float> knnsearch_result( NUM_CANDIDATES_FROM_TREE );
+knnsearch_result.init( &candidate_indexes[0], &out_dists_sqr[0] );
+polarcontext_tree_->index->findNeighbors( knnsearch_result, &curr_key[0] /* query */, nanoflann::SearchParams(10) );
+...
+for ( int candidate_iter_idx = 0; candidate_iter_idx < NUM_CANDIDATES_FROM_TREE; candidate_iter_idx++ )
+{
+  MatrixXd polarcontext_candidate = polarcontexts_[ candidate_indexes[candidate_iter_idx] ];
+  std::pair<double, int> sc_dist_result = distanceBtnScanContext( curr_desc, polarcontext_candidate ); 
+        
+  double candidate_dist = sc_dist_result.first;
+  int candidate_align = sc_dist_result.second;
+
+  if( candidate_dist < min_dist )
+  {
+  min_dist = candidate_dist;
+  nn_align = candidate_align;
+
+  nn_idx = candidate_indexes[candidate_iter_idx];
+  }
+}
+```
+根据阈值判断是否检测到回环
+```
+if( min_dist < SC_DIST_THRES )
+{
+     loop_id = nn_idx; 
+    
+     // std::cout.precision(3); 
+     cout << "[Loop found] Nearest distance: " << min_dist << " btn " << polarcontexts_.size()-1 << " and " << nn_idx << "." << endl;
+     cout << "[Loop found] yaw diff: " << nn_align * PC_UNIT_SECTORANGLE << " deg." << endl;
+}
+else
+{
+     std::cout.precision(3); 
+     cout << "[Not loop] Nearest distance: " << min_dist << " btn " << polarcontexts_.size()-1 << " and " << nn_idx << "." << endl;
+     cout << "[Not loop] yaw diff: " << nn_align * PC_UNIT_SECTORANGLE << " deg." << endl;
+}
+```
