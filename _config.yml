@@ -117,11 +117,11 @@ author:
   avatar           : "/assets/images/cat.jpg"
   bio              : "Here is Cosmos Cat."
   location         : "ChengDu SiChuang China"
-  email            : #
+  email            : "illusionaryshelter@gmail.com"
   links:
     - label: "Email"
       icon: "fas fa-fw fa-envelope-square"
-      url: "illusionaryshelter@gmail.com"
+      # url: "illusionaryshelter@gmail.com"
     - label: "Website"
       icon: "fas fa-fw fa-link"
       # url: "https://your-website.com"
