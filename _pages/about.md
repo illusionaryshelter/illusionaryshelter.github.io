@@ -17,11 +17,11 @@ header:
 
 博主的热情主要集中在机器人技术与人工智能的交叉领域。
 
-* **机器人学 (Robotics)**: 这是我所有兴趣的载体。从机械臂的运动规划到底盘的导航控制，例如sim2real，real2real,etc。
+* **机器人学 (Robotics)**: 这是我所有兴趣的载体。从机械臂的运动规划到底盘的导航控制，例如FOC，MPC，sim2real，etc。
 
 * **计算机视觉 (Computer Vision)**: 我已经学习了一段时间传统视觉，目前在尝试结合一些learning based的方法。
 
-* **三维重建**: 我对多视图几何、点云处理以及视觉-惯性融合等技术尤为关注，例如real2sim,SLAM。
+* **三维重建**: 我对多视图几何、点云处理以及视觉-惯性融合等技术尤为关注，例如real2sim，SLAM。
 
 * **自动驾驶 (Autonomous Driving)**: 这是我关注的终极应用领域之一。
 
@@ -35,6 +35,7 @@ header:
 
 * **邮箱**: illusionaryshelter@gmail.com
 * **GitHub**: [@illusionaryshelter](https://github.com/illusionaryshelter)
+
 
 
 
