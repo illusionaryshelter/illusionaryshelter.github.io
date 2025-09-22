@@ -3,11 +3,11 @@ permalink: /about/
 title: "About"
 last_modified_at: 2022-05-27T11:59:26-04:00
 toc: true
-layout: single
+layout: posts
 header:
-  overlay_image: /assets/images/unsplash-image-1.jpg
+  overlay_image: /assets/images/b2.jpg
 ---
-### Hello, Here is [Cosmos Cat] 👋
+### Hello, Here is Cosmos Cat 👋
 
 博主是一名大四学生，喜欢摇滚，歌剧和爵士，爱好历史和文学。
 
@@ -33,6 +33,7 @@ header:
 
 这个博客是我的个人空间，也是一个开放的交流平台。如果你对我的文章有任何想法，或者我们有共同的兴趣，又或者你只是想打个招呼，都非常欢迎！
 
-* **邮箱**: `illusionaryshelter@gmail.com`
+* **邮箱**: illusionaryshelter@gmail.com
 * **GitHub**: [@illusionaryshelter](https://github.com/illusionaryshelter)
+
 
