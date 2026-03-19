@@ -1,24 +1,13 @@
 ---
 title: "Fast-LIO+GICP与ScanContext的分析"
-date: 2025-04-21 22:30:00 +0800 # 文章的精确发布时间，+0800代表东八区
-
-categories: 
-  - SLAM
-  - LIO
-tags:
-  - C++
-  - Fast-LIO
-  - GICP
-  - Point Registration
-  - Loop Closure Detection
-excerpt_separator: "" 
-header:
-  overlay_image: /assets/images/b1.jpg
-  actions:
-    - label: "Code"
-      url: "https://github.com/illusionaryshelter/FAST-LIO-Localization-SC-QN2"
-
+date: 2025-04-21
+categories: [SLAM, LIO]
+tags: [C++, Fast-LIO, GICP, Point Registration, Loop Closure Detection]
+coverImage: assets/images/b2.jpg
+excerpt: "GICP将问题提升了一个维度——它不再将点云视为孤立点的集合，而是为每个点估计一个局部平面。结合Scan Context实现轻量级回环检测。"
+codeUrl: https://github.com/illusionaryshelter/FAST-LIO-Localization-SC-QN2
 ---
+
 
 ## 1. 动机：为何选择 GICP 与 Scan Context？
 

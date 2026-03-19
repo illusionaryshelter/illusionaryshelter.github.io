@@ -1,4 +1,74 @@
----
-layout: home
-author_profile: true
----
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="太空猫的个人博客 — 记录 SLAM、自动驾驶、计算机视觉与机器人技术的探索旅程">
+  <meta name="keywords" content="SLAM, 自动驾驶, 计算机视觉, 机器人, 博客, 太空猫">
+  <meta name="author" content="太空猫 (illusionaryshelter)">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="太空猫的个人博客">
+  <meta property="og:description" content="记录 SLAM、自动驾驶、计算机视觉与机器人技术的探索旅程">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://illusionaryshelter.github.io">
+
+  <title>太空猫的博客 — Cosmos Cat's Blog</title>
+
+  <!-- Favicon (emoji fallback) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐱</text></svg>">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Page Loading -->
+  <div class="page-loading" id="page-loading">
+    <div class="loader"></div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="navbar-inner">
+      <a class="navbar-brand" href="#/">
+        <div class="brand-icon">🐱</div>
+        太空猫
+      </a>
+      <ul class="navbar-links" id="navbar-links">
+        <li><a href="#/" class="active">🏠 首页</a></li>
+        <li><a href="#/about">👤 关于</a></li>
+        <li><a href="https://github.com/illusionaryshelter" target="_blank" rel="noopener">🐙 GitHub</a></li>
+      </ul>
+      <button class="mobile-toggle" id="mobile-toggle" aria-label="菜单">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main App Container -->
+  <main class="main-content" id="app">
+    <!-- Content is dynamically rendered by app.js -->
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <ul class="footer-links">
+        <li><a href="#/">首页</a></li>
+        <li><a href="#/about">关于</a></li>
+        <li><a href="https://github.com/illusionaryshelter" target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href="mailto:illusionaryshelter@gmail.com">邮箱</a></li>
+      </ul>
+      <p class="footer-copy">
+        © 2013 – 2026 太空猫 · Made with <span class="heart">♥</span> · Powered by ☕ & 🎸
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="posts.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
