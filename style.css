@@ -1174,33 +1174,54 @@ img {
   font-size: 0.95rem;
 }
 
-/* ---------- Cursor Trail Effect ---------- */
-.cursor-glow {
+/* ---------- Cursor Water Ripple Effect ---------- */
+.cursor-ripple {
   position: fixed;
-  width: 28px;
-  height: 28px;
   border-radius: 50%;
   pointer-events: none;
   z-index: 9998;
-  transition: transform 0.08s ease-out, opacity 0.3s;
-  background: radial-gradient(circle, rgba(232, 115, 74, 0.35) 0%, rgba(245, 198, 208, 0.15) 60%, transparent 100%);
-  mix-blend-mode: screen;
+  border: 2px solid rgba(232, 115, 74, 0.4);
+  background: radial-gradient(circle, rgba(245, 198, 208, 0.08) 0%, transparent 70%);
+  animation: rippleExpand 0.8s ease-out forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes rippleExpand {
+  0% {
+    width: 8px;
+    height: 8px;
+    opacity: 0.6;
+    border-width: 2px;
+  }
+  50% {
+    opacity: 0.3;
+    border-width: 1.5px;
+  }
+  100% {
+    width: 80px;
+    height: 80px;
+    opacity: 0;
+    border-width: 0.5px;
+  }
+}
+
+/* Cursor glow dot at center */
+.cursor-dot {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  background: radial-gradient(circle, rgba(232, 115, 74, 0.6) 0%, rgba(245, 198, 208, 0.3) 100%);
+  box-shadow: 0 0 12px rgba(232, 115, 74, 0.3), 0 0 4px rgba(245, 198, 208, 0.4);
+  transition: transform 0.06s ease-out;
   will-change: transform;
 }
 
-.cursor-trail {
-  position: fixed;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9997;
-  opacity: 0;
-  will-change: transform, opacity;
-  transition: none;
-}
-
-/* Hide custom cursor on mobile */
+/* Hide on mobile */
 @media (hover: none), (pointer: coarse) {
-  .cursor-glow, .cursor-trail { display: none !important; }
+  .cursor-ripple, .cursor-dot { display: none !important; }
 }
 
 /* ---------- Navbar Time Widget ---------- */

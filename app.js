@@ -603,47 +603,49 @@
   }
 
 
-  /* ========== Cursor Trail Effect ========== */
+  /* ========== Cursor Water Ripple Effect ========== */
   function initCursorTrail() {
     if ('ontouchstart' in window || navigator.maxTouchPoints > 0) return;
 
-    const glow = document.createElement('div');
-    glow.className = 'cursor-glow';
-    document.body.appendChild(glow);
+    // Glowing dot that follows cursor
+    const dot = document.createElement('div');
+    dot.className = 'cursor-dot';
+    document.body.appendChild(dot);
 
-    const TRAIL_COUNT = 8;
-    const trails = [];
-    for (let i = 0; i < TRAIL_COUNT; i++) {
-      const dot = document.createElement('div');
-      dot.className = 'cursor-trail';
-      const size = 6 - (i * 0.5);
-      const opacity = 0.4 - (i * 0.04);
-      dot.style.width = size + 'px';
-      dot.style.height = size + 'px';
-      dot.style.background = `radial-gradient(circle, rgba(232,115,74,${opacity}) 0%, rgba(245,198,208,${opacity*0.4}) 100%)`;
-      document.body.appendChild(dot);
-      trails.push({ el: dot, x: 0, y: 0 });
+    let mouseX = -100, mouseY = -100;
+    let dotX = -100, dotY = -100;
+    let lastRippleTime = 0;
+
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+
+      // Create ripple (throttled — max ~16 ripples/sec)
+      const now = Date.now();
+      if (now - lastRippleTime > 60) {
+        createRipple(e.clientX, e.clientY);
+        lastRippleTime = now;
+      }
+    });
+
+    document.addEventListener('mouseleave', () => { dot.style.opacity = '0'; });
+    document.addEventListener('mouseenter', () => { dot.style.opacity = '1'; });
+
+    function createRipple(x, y) {
+      const ripple = document.createElement('div');
+      ripple.className = 'cursor-ripple';
+      ripple.style.left = (x - 4) + 'px';
+      ripple.style.top = (y - 4) + 'px';
+      document.body.appendChild(ripple);
+      // Remove after animation ends
+      ripple.addEventListener('animationend', () => ripple.remove());
     }
 
-    let mouseX = -100, mouseY = -100, glowX = -100, glowY = -100;
-    document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
-    document.addEventListener('mouseleave', () => { glow.style.opacity = '0'; trails.forEach(t => t.el.style.opacity = '0'); });
-    document.addEventListener('mouseenter', () => { glow.style.opacity = '1'; });
-
+    // Smooth dot follow
     function animate() {
-      glowX += (mouseX - glowX) * 0.15;
-      glowY += (mouseY - glowY) * 0.15;
-      glow.style.transform = `translate(${glowX - 14}px, ${glowY - 14}px)`;
-      let px = glowX, py = glowY;
-      for (let i = 0; i < TRAIL_COUNT; i++) {
-        const t = trails[i];
-        t.x += (px - t.x) * (0.25 - i * 0.02);
-        t.y += (py - t.y) * (0.25 - i * 0.02);
-        const s = parseFloat(t.el.style.width) || 5;
-        t.el.style.transform = `translate(${t.x - s/2}px, ${t.y - s/2}px)`;
-        t.el.style.opacity = '1';
-        px = t.x; py = t.y;
-      }
+      dotX += (mouseX - dotX) * 0.2;
+      dotY += (mouseY - dotY) * 0.2;
+      dot.style.transform = `translate(${dotX - 5}px, ${dotY - 5}px)`;
       requestAnimationFrame(animate);
     }
     requestAnimationFrame(animate);
